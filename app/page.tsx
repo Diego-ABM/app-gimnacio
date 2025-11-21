@@ -1,65 +1,191 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { useGym } from "@/context/GymContext";
 
 export default function Home() {
+  const { routines, workoutSessions, activeSession } = useGym();
+
+  const completedWorkouts = workoutSessions.filter((s) => s.completed).length;
+  const recentSessions = workoutSessions
+    .filter((s) => s.completed)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-[var(--background)] p-4 pb-20">
+      {/* Header */}
+      <header className="mb-8 pt-4">
+        <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">
+          💪 GymTracker
+        </h1>
+        <p className="text-[var(--foreground)] opacity-70">
+          Tu rutina de gimnasio personalizada
+        </p>
+      </header>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <Card className="text-center">
+          <div className="text-3xl font-bold text-[var(--primary)]">
+            {routines.length}
+          </div>
+          <div className="text-sm text-[var(--foreground)] opacity-70 mt-1">
+            Rutinas
+          </div>
+        </Card>
+        <Card className="text-center">
+          <div className="text-3xl font-bold text-[var(--success)]">
+            {completedWorkouts}
+          </div>
+          <div className="text-sm text-[var(--foreground)] opacity-70 mt-1">
+            Entrenamientos
+          </div>
+        </Card>
+      </div>
+
+      {/* Active Workout Alert */}
+      {activeSession && (
+        <Card className="mb-6 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] border-none">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-white font-semibold mb-1">
+                Entrenamiento Activo
+              </h3>
+              <p className="text-white/90 text-sm">
+                {activeSession.routineName}
+              </p>
+            </div>
+            <Link href={`/workout/${activeSession.routineId}`}>
+              <Button
+                variant="ghost"
+                className="bg-white/20 text-white border-white/30"
+              >
+                Continuar →
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
+          Acciones Rápidas
+        </h2>
+        <div className="grid grid-cols-1 gap-3">
+          <Link href="/routines">
+            <Card hoverable className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[var(--primary)] flex items-center justify-center text-2xl">
+                📋
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-[var(--foreground)]">
+                  Mis Rutinas
+                </h3>
+                <p className="text-sm text-[var(--foreground)] opacity-70">
+                  Ver y gestionar rutinas
+                </p>
+              </div>
+              <span className="text-[var(--foreground)] opacity-50">→</span>
+            </Card>
+          </Link>
+
+          <Link href="/history">
+            <Card hoverable className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center text-2xl">
+                📊
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-[var(--foreground)]">
+                  Historial
+                </h3>
+                <p className="text-sm text-[var(--foreground)] opacity-70">
+                  Ver progreso y estadísticas
+                </p>
+              </div>
+              <span className="text-[var(--foreground)] opacity-50">→</span>
+            </Card>
+          </Link>
+        </div>
+      </div>
+
+      {/* Recent Workouts */}
+      {recentSessions.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
+            Entrenamientos Recientes
+          </h2>
+          <div className="space-y-3">
+            {recentSessions.map((session) => (
+              <Card
+                key={session.id}
+                className="flex items-center justify-between"
+              >
+                <div>
+                  <h3 className="font-medium text-[var(--foreground)]">
+                    {session.routineName}
+                  </h3>
+                  <p className="text-sm text-[var(--foreground)] opacity-70">
+                    {new Date(session.date).toLocaleDateString("es-ES", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}{" "}
+                    • {session.duration} min
+                  </p>
+                </div>
+                <div className="text-2xl">✅</div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {routines.length === 0 && (
+        <Card className="text-center py-12">
+          <div className="text-6xl mb-4">🏋️</div>
+          <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
+            ¡Comienza tu viaje fitness!
+          </h3>
+          <p className="text-[var(--foreground)] opacity-70 mb-6">
+            Crea tu primera rutina para empezar a entrenar
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link href="/routines">
+            <Button>Crear Rutina</Button>
+          </Link>
+        </Card>
+      )}
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-[var(--card-bg)] border-t border-[var(--border)] px-4 py-3 safe-area-inset-bottom">
+        <div className="flex justify-around items-center max-w-lg mx-auto">
+          <Link
+            href="/"
+            className="flex flex-col items-center gap-1 text-[var(--primary)]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <span className="text-2xl">🏠</span>
+            <span className="text-xs font-medium">Inicio</span>
+          </Link>
+          <Link
+            href="/routines"
+            className="flex flex-col items-center gap-1 text-[var(--foreground)] opacity-60"
           >
-            Documentation
-          </a>
+            <span className="text-2xl">📋</span>
+            <span className="text-xs font-medium">Rutinas</span>
+          </Link>
+          <Link
+            href="/history"
+            className="flex flex-col items-center gap-1 text-[var(--foreground)] opacity-60"
+          >
+            <span className="text-2xl">📊</span>
+            <span className="text-xs font-medium">Historial</span>
+          </Link>
         </div>
-      </main>
+      </nav>
     </div>
   );
 }
